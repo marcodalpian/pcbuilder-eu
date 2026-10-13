@@ -15,16 +15,109 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-model Post {
-    id        Int      @id @default(autoincrement())
+// --- Catalogo ---
+
+enum ComponentCategory {
+    CPU
+    MOTHERBOARD
+    MEMORY
+    GPU
+    STORAGE
+    PSU
+    CASE
+    COOLER
+}
+
+model Component {
+    id        String            @id @default(cuid())
+    category  ComponentCategory
+    brand     String
+    model     String
+    slug      String            @unique
+    // Specifiche per categoria, validate con gli schemi zod in src/lib/engine/specs.ts
+    specs     Json
+    imageUrl  String?
+    createdAt DateTime          @default(now())
+    updatedAt DateTime          @updatedAt
+
+    offers     Offer[]
+    buildItems BuildItem[]
+
+    @@unique([category, brand, model])
+    @@index([category])
+}
+
+model Retailer {
+    id           String  @id @default(cuid())
+    name         String
+    slug         String  @unique
+    country      String // ISO 3166-1 alpha-2, es. "IT", "DE"
+    baseUrl      String
+    affiliateTag String?
+    active       Boolean @default(true)
+
+    offers Offer[]
+}
+
+// Un componente venduto da un retailer: prezzo attuale + storico.
+model Offer {
+    id            String   @id @default(cuid())
+    componentId   String
+    retailerId    String
+    url           String
+    priceCents    Int
+    currency      String   @default("EUR")
+    inStock       Boolean
+    lastCheckedAt DateTime @default(now())
+
+    component Component    @relation(fields: [componentId], references: [id], onDelete: Cascade)
+    retailer  Retailer     @relation(fields: [retailerId], references: [id], onDelete: Cascade)
+    history   PricePoint[]
+
+    @@unique([componentId, retailerId])
+    @@index([retailerId])
+}
+
+model PricePoint {
+    id         String   @id @default(cuid())
+    offerId    String
+    priceCents Int
+    inStock    Boolean
+    recordedAt DateTime @default(now())
+
+    offer Offer @relation(fields: [offerId], references: [id], onDelete: Cascade)
+
+    @@index([offerId, recordedAt])
+}
+
+// --- Build utenti ---
+
+model Build {
+    id        String   @id @default(cuid())
     name      String
+    // Id corto e non indovinabile per i link di condivisione
+    shareId   String   @unique
+    isPublic  Boolean  @default(false)
+    userId    String?
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    createdBy   User   @relation(fields: [createdById], references: [id])
-    createdById String
+    user  User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+    items BuildItem[]
 
-    @@index([name])
+    @@index([userId])
+}
+
+model BuildItem {
+    id          String @id @default(cuid())
+    buildId     String
+    componentId String
+    quantity    Int    @default(1)
+
+    build     Build     @relation(fields: [buildId], references: [id], onDelete: Cascade)
+    component Component @relation(fields: [componentId], references: [id], onDelete: Restrict)
+
+    @@unique([buildId, componentId])
 }
 
 // Necessary for Next auth
@@ -63,7 +156,7 @@ model User {
     image         String?
     accounts      Account[]
     sessions      Session[]
-    posts         Post[]
+    builds        Build[]
 }
 
 model VerificationToken {
