@@ -158,6 +158,14 @@ export const seedComponents: SeedComponent[] = [
     lengthMm: 204,
     power: { pcie8pin: 1, pin12v2x6: 0 },
   }),
+  // Scheda custom molto lunga (357,6 mm): non entra né nel NR200P né nel North.
+  c("GPU", "ASUS", "ROG Astral GeForce RTX 5090 OC", {
+    chipset: "RTX 5090",
+    vramGb: 32,
+    boardPowerW: 575,
+    lengthMm: 358,
+    power: { pcie8pin: 0, pin12v2x6: 1 },
+  }),
 
   // --- Archiviazione ---
   c("STORAGE", "Samsung", "990 PRO 2TB", {
