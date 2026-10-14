@@ -141,12 +141,16 @@ function OptionList({
                 <span className="text-muted mt-0.5 block font-mono text-xs tabular-nums">
                   <SpecLine item={item} />
                 </span>
-                {problems[0] && (
-                  <span className="text-error mt-1.5 flex items-start gap-1.5 text-xs">
+                {/* Tutti i motivi, non solo il primo: cambiarne uno potrebbe non bastare. */}
+                {problems.map((problem) => (
+                  <span
+                    key={`${problem.code}-${problem.message}`}
+                    className="text-error mt-1.5 flex items-start gap-1.5 text-xs"
+                  >
                     <CircleX className="mt-px size-3.5 shrink-0" aria-hidden />
-                    {problems[0].message}
+                    {problem.message}
                   </span>
-                )}
+                ))}
               </span>
               {isSelected && (
                 <Check

@@ -104,7 +104,7 @@ const rules: Rule[] = [
       ? {
           code: "cpu_socket_mismatch",
           severity: "error",
-          message: `La CPU usa il socket ${cpu.socket}, la scheda madre ${motherboard.socket}.`,
+          message: `La CPU usa il socket ${cpu.socket}, la scheda madre invece il ${motherboard.socket}.`,
           components: ["CPU", "MOTHERBOARD"],
         }
       : null,

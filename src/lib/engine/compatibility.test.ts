@@ -208,6 +208,71 @@ describe("checkCompatibility", () => {
   });
 });
 
+describe("incompatibilità sovrapposte", () => {
+  it("il case segnala tutti i suoi problemi insieme, non solo il primo", () => {
+    const itxCase = {
+      motherboardFormFactors: ["ITX" as const],
+      psuFormFactors: ["SFX" as const],
+      maxGpuLengthMm: 280,
+      maxCpuCoolerHeightMm: 70,
+      radiatorSizesMm: [240],
+    };
+    const r = checkCompatibility({ ...goodBuild, case: itxCase });
+    const caseErrors = r.issues.filter(
+      (i) => i.severity === "error" && i.components.includes("CASE"),
+    );
+    expect(caseErrors.map((i) => i.code).sort()).toEqual(
+      [
+        "case_cooler_too_tall",
+        "case_gpu_too_long",
+        "case_motherboard_form_factor",
+        "case_psu_form_factor",
+      ].sort(),
+    );
+  });
+
+  it("problemi su componenti diversi compaiono tutti, una volta sola", () => {
+    const ssd = goodBuild.storage![0]!;
+    const r = checkCompatibility({
+      ...goodBuild,
+      cpu: { ...am5Cpu, socket: "LGA1851" },
+      memory: [{ type: "DDR4", modules: 2, moduleSizeGb: 16, speedMts: 3200 }],
+      gpu: { ...goodBuild.gpu!, lengthMm: 400 },
+      storage: [ssd, ssd, ssd],
+      psu: { ...goodBuild.psu!, wattage: 400 },
+    });
+    const found = r.issues.map((i) => i.code);
+    expect(found).toEqual(
+      expect.arrayContaining([
+        "cpu_socket_mismatch",
+        "memory_type_mismatch",
+        "memory_type_cpu_unsupported",
+        "case_gpu_too_long",
+        "m2_slots_exceeded",
+        "psu_insufficient",
+      ]),
+    );
+    expect(new Set(found).size).toBe(found.length);
+    expect(r.valid).toBe(false);
+  });
+
+  it("un candidato con più motivi di incompatibilità li riporta tutti", () => {
+    const problems = introducedErrors(
+      { ...goodBuild, gpu: undefined },
+      {
+        gpu: {
+          ...goodBuild.gpu!,
+          lengthMm: 400,
+          power: { pcie8pin: 4, pin12v2x6: 0 },
+        },
+      },
+    );
+    expect(problems.map((i) => i.code).sort()).toEqual(
+      ["case_gpu_too_long", "gpu_power_connectors_missing"].sort(),
+    );
+  });
+});
+
 describe("introducedErrors", () => {
   it("ignora errori già presenti e segnala solo quelli nuovi", () => {
     const broken: BuildInput = {
