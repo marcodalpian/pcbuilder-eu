@@ -214,6 +214,7 @@ export function Builder({
         <aside className="min-w-0 lg:sticky lg:top-6 lg:self-start">
           <StatusPanel
             result={result}
+            selectedItems={SLOTS.flatMap(itemsFor)}
             isEmpty={isEmpty}
             hasCpuOrGpu={!!(input.cpu ?? input.gpu)}
             psuWattage={input.psu?.wattage ?? null}

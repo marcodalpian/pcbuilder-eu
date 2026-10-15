@@ -4,6 +4,7 @@ import { Check, CircleX, Search } from "lucide-react";
 import { useId, useMemo, useState } from "react";
 
 import { categoryNoun, type CatalogItem } from "~/lib/catalog";
+import { PriceTag } from "./price";
 import { SpecLine } from "./spec-line";
 import type { Category, Issue } from "~/lib/engine";
 
@@ -152,12 +153,15 @@ function OptionList({
                   </span>
                 ))}
               </span>
-              {isSelected && (
-                <Check
-                  className="text-accent mt-0.5 size-4"
-                  aria-label="Selezionato"
-                />
-              )}
+              <span className="flex items-start gap-2">
+                <PriceTag item={item} />
+                {isSelected && (
+                  <Check
+                    className="text-accent mt-0.5 size-4"
+                    aria-label="Selezionato"
+                  />
+                )}
+              </span>
             </button>
           </li>
         );

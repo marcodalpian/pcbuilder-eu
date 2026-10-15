@@ -2,7 +2,24 @@ import { describe, expect, it } from "vitest";
 
 import { checkCompatibility } from "../src/lib/engine/compatibility";
 import { categories, parseSpecs, type Category } from "../src/lib/engine/specs";
-import { seedComponents } from "./seed-data";
+import { offerLinks } from "./offer-links";
+import { componentSlug, seedComponents, seedRetailers } from "./seed-data";
+
+describe("offer-links", () => {
+  it("ogni link punta a un componente e a un negozio del seed", () => {
+    const slugs = new Set(seedComponents.map(componentSlug));
+    const retailers = new Set(seedRetailers.map((r) => r.slug));
+    for (const link of offerLinks) {
+      expect(slugs, link.url).toContain(link.component);
+      expect(retailers, link.url).toContain(link.retailer);
+    }
+  });
+
+  it("al massimo un link per componente e negozio", () => {
+    const keys = offerLinks.map((l) => `${l.component}|${l.retailer}`);
+    expect(new Set(keys).size).toBe(keys.length);
+  });
+});
 
 describe("seed-data", () => {
   it("ogni componente rispetta lo schema della sua categoria", () => {

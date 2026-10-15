@@ -16,6 +16,15 @@ type SeedComponent<C extends Category = Category> = {
   specs: SpecsFor<C>;
 };
 
+/** Slug usato nel DB e nei link: "AMD" + "Ryzen 7 9800X3D" → "amd-ryzen-7-9800x3d". */
+export const componentSlug = ({ brand, model }: SeedComponent) =>
+  `${brand} ${model}`
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+
 const c = <C extends Category>(
   category: C,
   brand: string,
@@ -246,6 +255,12 @@ export const seedComponents: SeedComponent[] = [
 ];
 
 export const seedRetailers = [
+  {
+    slug: "alternate",
+    name: "Alternate",
+    country: "IT",
+    baseUrl: "https://www.alternate.it",
+  },
   {
     slug: "amazon-it",
     name: "Amazon.it",

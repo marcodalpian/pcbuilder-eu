@@ -5,6 +5,7 @@ import type { ReactNode, RefObject } from "react";
 
 import { CATEGORY_LABEL, categoryNoun, type CatalogItem } from "~/lib/catalog";
 import type { Category, Severity } from "~/lib/engine";
+import { OfferLink } from "./price";
 import { SpecLine } from "./spec-line";
 import { button, CATEGORY_ICON } from "./ui";
 
@@ -94,6 +95,7 @@ export function SlotRow({
                     <p className="text-muted mt-0.5 font-mono text-xs tabular-nums">
                       <SpecLine item={item} />
                     </p>
+                    <OfferLink item={item} />
                   </div>
                   {multi && (
                     <button

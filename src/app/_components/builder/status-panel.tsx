@@ -10,12 +10,20 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { CATEGORY_LABEL, categoryNoun, SLOTS } from "~/lib/catalog";
+import {
+  bestOffer,
+  CATEGORY_LABEL,
+  categoryNoun,
+  formatPrice,
+  SLOTS,
+  type CatalogItem,
+} from "~/lib/catalog";
 import type { Category, CompatibilityResult } from "~/lib/engine";
 import { button } from "./ui";
 
 export function StatusPanel({
   result,
+  selectedItems,
   isEmpty,
   hasCpuOrGpu,
   psuWattage,
@@ -25,6 +33,7 @@ export function StatusPanel({
   onUndo,
 }: {
   result: CompatibilityResult;
+  selectedItems: CatalogItem[];
   isEmpty: boolean;
   hasCpuOrGpu: boolean;
   psuWattage: number | null;
@@ -107,6 +116,8 @@ export function StatusPanel({
         </section>
       )}
 
+      {selectedItems.length > 0 && <Total items={selectedItems} />}
+
       <section className="border-line border-t px-5 py-4">
         <h3 className="text-muted text-xs font-medium">Alimentazione</h3>
         {hasCpuOrGpu ? (
@@ -141,6 +152,54 @@ export function StatusPanel({
         )}
       </section>
     </div>
+  );
+}
+
+const dateTime = new Intl.DateTimeFormat("it-IT", {
+  day: "numeric",
+  month: "long",
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
+function Total({ items }: { items: CatalogItem[] }) {
+  const offers = items.map(bestOffer);
+  const priced = offers.filter((o) => o !== undefined);
+  const totalCents = priced.reduce((sum, o) => sum + o.priceCents, 0);
+  const unpriced = offers.length - priced.length;
+  // Il controllo più vecchio: il totale è aggiornato almeno fino a lì.
+  const oldest = priced
+    .map((o) => o.checkedAt)
+    .sort()
+    .at(0);
+
+  return (
+    <section className="border-line border-t px-5 py-4">
+      <h3 className="text-muted text-xs font-medium">Prezzo</h3>
+      <dl className="mt-2 grid grid-cols-[1fr_auto] items-baseline gap-y-1.5 text-sm">
+        <dt className="text-muted">
+          {priced.length === items.length
+            ? "Totale, al prezzo migliore"
+            : "Totale parziale"}
+        </dt>
+        <dd className="text-right font-mono text-base font-medium tabular-nums">
+          {priced.length > 0 ? formatPrice(totalCents) : "—"}
+        </dd>
+      </dl>
+      {unpriced > 0 && (
+        <p className="text-faint mt-1.5 text-xs">
+          {unpriced === 1
+            ? "1 componente senza prezzo non è incluso."
+            : `${unpriced} componenti senza prezzo non sono inclusi.`}
+        </p>
+      )}
+      {oldest && (
+        <p className="text-faint mt-1.5 text-xs">
+          IVA inclusa, spedizione esclusa. Prezzi verificati dal{" "}
+          {dateTime.format(new Date(oldest))}: fa fede il sito del negozio.
+        </p>
+      )}
+    </section>
   );
 }
 

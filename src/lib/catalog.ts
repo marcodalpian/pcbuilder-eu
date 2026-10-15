@@ -1,5 +1,15 @@
 import type { BuildInput, Category, SpecsFor } from "~/lib/engine";
 
+/** Offerta disponibile in un negozio, già filtrata: solo prodotti in vendita. */
+export type CatalogOffer = {
+  retailer: string; // nome visualizzato
+  url: string;
+  /** IVA inclusa, spedizione esclusa. */
+  priceCents: number;
+  /** ISO 8601: quando abbiamo letto il prezzo l'ultima volta. */
+  checkedAt: string;
+};
+
 /** Componente del catalogo con specifiche già validate, tipizzate per categoria. */
 export type CatalogItem = {
   [C in Category]: {
@@ -9,8 +19,19 @@ export type CatalogItem = {
     brand: string;
     model: string;
     specs: SpecsFor<C>;
+    /** Dal prezzo più basso al più alto. Vuoto solo in sviluppo (SHOW_UNAVAILABLE_PARTS). */
+    offers: CatalogOffer[];
   };
 }[Category];
+
+export const bestOffer = (item: CatalogItem): CatalogOffer | undefined =>
+  item.offers[0];
+
+const euro = new Intl.NumberFormat("it-IT", {
+  style: "currency",
+  currency: "EUR",
+});
+export const formatPrice = (cents: number) => euro.format(cents / 100);
 
 /** Slot della build nell'ordine in cui li mostra la UI. */
 export const SLOTS = [

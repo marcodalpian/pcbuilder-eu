@@ -68,7 +68,12 @@ model Offer {
     priceCents    Int
     currency      String   @default("EUR")
     inStock       Boolean
+    // EAN letto dalla pagina: serve a verificare che i link curati a mano
+    // di negozi diversi puntino allo stesso prodotto.
+    gtin          String?
     lastCheckedAt DateTime @default(now())
+    // Ultima lettura fallita (pagina sparita, dati assenti...); null se ok.
+    lastError     String?
 
     component Component    @relation(fields: [componentId], references: [id], onDelete: Cascade)
     retailer  Retailer     @relation(fields: [retailerId], references: [id], onDelete: Cascade)

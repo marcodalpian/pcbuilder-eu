@@ -14,6 +14,12 @@ export const env = createEnv({
     AUTH_DISCORD_ID: z.string(),
     AUTH_DISCORD_SECRET: z.string(),
     DATABASE_URL: z.string().url(),
+    // Solo sviluppo: mostra anche i componenti senza offerte disponibili.
+    // In produzione il builder mostra solo prodotti realmente in vendita.
+    SHOW_UNAVAILABLE_PARTS: z
+      .enum(["true", "false"])
+      .default("false")
+      .transform((v) => v === "true"),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
@@ -37,6 +43,7 @@ export const env = createEnv({
     AUTH_DISCORD_ID: process.env.AUTH_DISCORD_ID,
     AUTH_DISCORD_SECRET: process.env.AUTH_DISCORD_SECRET,
     DATABASE_URL: process.env.DATABASE_URL,
+    SHOW_UNAVAILABLE_PARTS: process.env.SHOW_UNAVAILABLE_PARTS,
     NODE_ENV: process.env.NODE_ENV,
   },
   /**

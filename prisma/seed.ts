@@ -1,16 +1,8 @@
 import { PrismaClient } from "../generated/prisma";
 import { parseSpecs } from "../src/lib/engine/specs";
-import { seedComponents, seedRetailers } from "./seed-data";
+import { componentSlug, seedComponents, seedRetailers } from "./seed-data";
 
 const db = new PrismaClient();
-
-const slugify = (s: string) =>
-  s
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
 
 async function main() {
   // Idempotente: rilanciarlo aggiorna i record esistenti invece di duplicarli.
@@ -20,7 +12,7 @@ async function main() {
 
   for (const comp of seedComponents) {
     const specs = parseSpecs(comp.category, comp.specs);
-    const slug = slugify(`${comp.brand} ${comp.model}`);
+    const slug = componentSlug(comp);
     const data = {
       category: comp.category,
       brand: comp.brand,
